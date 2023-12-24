@@ -1,0 +1,20 @@
+name: fsm
+description: "A Firebase inspired State Management library. FSM helps enable signaling, passing data, and communication between widgets. Essentially a modern EventBus implementation to support building realtime API based apps."
+version: 1.0.0
+homepage: https://codelessly.com
+
+environment:
+  sdk: '>=3.2.2 <4.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  rxdart: ^0.27.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
