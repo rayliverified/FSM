@@ -32,6 +32,15 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with FListenerStateMixin {
   @override
+  void initState() {
+    super.initState();
+    listenF(F.instance.collection('home').doc('counter'), (data) {
+      DocumentSnapshotWrapper snapshotWrapper = data;
+      debugPrint('Update Listener: $data, ${snapshotWrapper.data}');
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
