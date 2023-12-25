@@ -19,7 +19,7 @@ void main() {
       int counter = 0;
       Widget widget = MaterialApp(
         home: Scaffold(
-          body: MultiStreamBuilder(
+          body: FMultiStreamBuilder(
             references: [
               F.instance.doc('collection_1/document_1'),
               F.instance.doc('collection_1/document_1').value('field_1'),
@@ -63,7 +63,7 @@ void main() {
       F.instance.destroy();
       Widget widget = MaterialApp(
         home: Scaffold(
-          body: MultiStreamBuilder(
+          body: FMultiStreamBuilder(
             references: [
               F.instance.doc('collection_1/text'),
               F.instance.doc('collection_1/container'),

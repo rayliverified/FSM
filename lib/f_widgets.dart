@@ -6,27 +6,28 @@ typedef FunctionMap<T> = T Function(T value);
 
 Type typeOf<T>() => T;
 
-class LocalDocumentStream<T> extends StatefulWidget {
+class FDocumentStreamBuilder<T> extends StatefulWidget {
   final String document;
   final dynamic initialData;
   final FunctionMap<dynamic>? map;
   final StreamWidgetBuilder<T> builder;
   final String? database;
 
-  const LocalDocumentStream({
+  const FDocumentStreamBuilder({
     super.key,
-    this.database,
     required this.document,
     required this.builder,
+    this.database,
     this.initialData,
     this.map,
   });
 
   @override
-  State<LocalDocumentStream<T>> createState() => _LocalDocumentStreamState<T>();
+  State<FDocumentStreamBuilder<T>> createState() =>
+      _FDocumentStreamBuilderState<T>();
 }
 
-class _LocalDocumentStreamState<T> extends State<LocalDocumentStream<T>> {
+class _FDocumentStreamBuilderState<T> extends State<FDocumentStreamBuilder<T>> {
   late ValueStream<DocumentSnapshotWrapper> stream;
 
   @override
@@ -74,17 +75,17 @@ class _LocalDocumentStreamState<T> extends State<LocalDocumentStream<T>> {
   }
 }
 
-class LocalEventStream<Object> extends StatefulWidget {
-  final String event;
+class FCollectionStreamBuilder<Object> extends StatefulWidget {
+  final String collection;
   final StreamWidgetBuilder<Object> builder;
   final dynamic initialData;
   final FunctionMap<dynamic>? map;
   final String? database;
   final String? eventDatabase;
 
-  const LocalEventStream({
+  const FCollectionStreamBuilder({
     super.key,
-    required this.event,
+    required this.collection,
     required this.builder,
     this.initialData,
     this.map,
@@ -93,11 +94,12 @@ class LocalEventStream<Object> extends StatefulWidget {
   });
 
   @override
-  State<LocalEventStream<Object>> createState() =>
-      _LocalEventStreamState<Object>();
+  State<FCollectionStreamBuilder<Object>> createState() =>
+      _FCollectionStreamBuilderState<Object>();
 }
 
-class _LocalEventStreamState<T> extends State<LocalEventStream<T>> {
+class _FCollectionStreamBuilderState<T>
+    extends State<FCollectionStreamBuilder<T>> {
   late ValueStream<DocumentReferenceWrapper> stream;
 
   @override
@@ -106,7 +108,7 @@ class _LocalEventStreamState<T> extends State<LocalEventStream<T>> {
     stream = F.instance
         .database(widget.database)
         .eventDatabase(widget.eventDatabase)
-        .collection(widget.event)
+        .collection(widget.collection)
         .snapshots() as ValueStream<DocumentReferenceWrapper>;
   }
 
@@ -115,7 +117,7 @@ class _LocalEventStreamState<T> extends State<LocalEventStream<T>> {
     F.instance
         .database(widget.database)
         .eventDatabase(widget.eventDatabase)
-        .collection(widget.event)
+        .collection(widget.collection)
         .close();
     super.dispose();
   }
@@ -137,18 +139,18 @@ class _LocalEventStreamState<T> extends State<LocalEventStream<T>> {
   }
 }
 
-class MultiStreamBuilder extends StatefulWidget {
+class FMultiStreamBuilder extends StatefulWidget {
   final List<ReferenceWrapper> references;
   final StreamWidgetBuilder<Map<String, dynamic>> builder;
 
-  const MultiStreamBuilder(
+  const FMultiStreamBuilder(
       {super.key, required this.references, required this.builder});
 
   @override
-  State<MultiStreamBuilder> createState() => _MultiStreamBuilderState();
+  State<FMultiStreamBuilder> createState() => _FMultiStreamBuilderState();
 }
 
-class _MultiStreamBuilderState extends State<MultiStreamBuilder> {
+class _FMultiStreamBuilderState extends State<FMultiStreamBuilder> {
   Map<String, Stream> referenceStreams = {};
   List<StreamSubscription> referenceStreamSubscriptions = [];
   Map<String, dynamic> referenceSnapshot = {};
