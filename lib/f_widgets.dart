@@ -6,6 +6,66 @@ typedef FunctionMap<T> = T Function(T value);
 
 Type typeOf<T>() => T;
 
+class FStreamBuilder<T> extends StatefulWidget {
+  final ReferenceWrapper stream;
+  final dynamic initialData;
+  final StreamWidgetBuilder<T> builder;
+  final String? database;
+
+  const FStreamBuilder({
+    super.key,
+    required this.stream,
+    required this.builder,
+    this.database,
+    this.initialData,
+  });
+
+  @override
+  State<FStreamBuilder<T>> createState() => _FStreamBuilderState<T>();
+}
+
+class _FStreamBuilderState<T> extends State<FStreamBuilder<T>> {
+  late Stream<dynamic> stream;
+
+  @override
+  void initState() {
+    super.initState();
+    stream = getReferenceStream(widget.stream);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: stream,
+      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+        // First StreamBuilder data is empty. Return initial data immediately.
+        T value = widget.initialData;
+        if (snapshot.hasData) {
+          Type type = widget.stream.runtimeType;
+          switch (type) {
+            case const (CollectionReferenceWrapper):
+              value =
+                  (snapshot.data as DocumentReferenceWrapper?)?.snapshot.data;
+              break;
+            case const (DocumentReferenceWrapper):
+              value = (snapshot.data as DocumentSnapshotWrapper?)?.data;
+              break;
+            case const (ValueReferenceWrapper):
+              value = snapshot.data;
+              break;
+          }
+        }
+        return widget.builder(context, value);
+      },
+    );
+  }
+}
+
 class FDocumentStreamBuilder<T> extends StatefulWidget {
   final String document;
   final dynamic initialData;

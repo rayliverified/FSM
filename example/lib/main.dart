@@ -45,6 +45,14 @@ class _MyHomePageState extends State<MyHomePage> with FListenerStateMixin {
             const Text(
               'You have pushed the button this many times:',
             ),
+            FStreamBuilder<int>(
+              stream: F.instance.collection('home').doc('counter'),
+              initialData: 0,
+              builder: (context, value) {
+                print('Value: $value');
+                return Text(value.toString());
+              },
+            ),
             FDocumentStreamBuilder<int>(
               document: 'home/counter',
               initialData: 0,
