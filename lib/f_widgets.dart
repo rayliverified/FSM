@@ -13,7 +13,7 @@ class LocalDocumentStream<T> extends StatefulWidget {
   final StreamWidgetBuilder<T> builder;
   final String? database;
 
-  LocalDocumentStream({
+  const LocalDocumentStream({
     super.key,
     this.database,
     required this.document,
@@ -76,18 +76,18 @@ class _LocalDocumentStreamState<T> extends State<LocalDocumentStream<T>> {
 
 class LocalEventStream<Object> extends StatefulWidget {
   final String event;
+  final StreamWidgetBuilder<Object> builder;
   final dynamic initialData;
   final FunctionMap<dynamic>? map;
-  final StreamWidgetBuilder<Object> builder;
   final String? database;
   final String? eventDatabase;
 
-  LocalEventStream({
+  const LocalEventStream({
     super.key,
     required this.event,
+    required this.builder,
     this.initialData,
     this.map,
-    required this.builder,
     this.database,
     this.eventDatabase,
   });
@@ -139,9 +139,10 @@ class _LocalEventStreamState<T> extends State<LocalEventStream<T>> {
 
 class MultiStreamBuilder extends StatefulWidget {
   final List<ReferenceWrapper> references;
-  final StreamWidgetBuilder<Map<String, dynamic>>? builder;
+  final StreamWidgetBuilder<Map<String, dynamic>> builder;
 
-  MultiStreamBuilder({super.key, this.references = const [], this.builder});
+  const MultiStreamBuilder(
+      {super.key, required this.references, required this.builder});
 
   @override
   State<MultiStreamBuilder> createState() => _MultiStreamBuilderState();
@@ -199,8 +200,7 @@ class _MultiStreamBuilderState extends State<MultiStreamBuilder> {
       stream: referenceSnapshotStream.stream,
       builder:
           (BuildContext context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
-        return widget.builder?.call(context, snapshot.data ?? {}) ??
-            SizedBox.shrink();
+        return widget.builder.call(context, snapshot.data ?? {});
       },
     );
   }
@@ -220,5 +220,5 @@ Stream getReferenceStream(ReferenceWrapper reference) {
       return (reference as ValueReferenceWrapper).values();
   }
 
-  return Stream.empty();
+  return const Stream.empty();
 }
