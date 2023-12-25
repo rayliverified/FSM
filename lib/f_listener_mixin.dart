@@ -17,7 +17,7 @@ mixin FListenerMixin {
     Type type = reference.runtimeType;
     switch (type) {
       case const (CollectionReferenceWrapper):
-        throw ('CollectionReferenceWrapper is not yet supported');
+        stream = (reference as CollectionReferenceWrapper).snapshots();
       case const (DocumentReferenceWrapper):
         stream = (reference as DocumentReferenceWrapper).snapshots();
       case const (ValueReferenceWrapper):
@@ -28,13 +28,6 @@ mixin FListenerMixin {
 
     _referenceWrappers[reference.path] = reference;
     _subscriptions[reference.path] = stream.listen(onData, onError: onError);
-    (_groups[name] ?? {}).add(reference.path);
-  }
-
-  void addListenerF(ReferenceWrapper reference, StreamSubscription listener,
-      {String name = 'default'}) {
-    _referenceWrappers[reference.path] = reference;
-    _subscriptions[reference.path] = listener;
     (_groups[name] ?? {}).add(reference.path);
   }
 
@@ -82,7 +75,7 @@ mixin FListenerStateMixin<T extends StatefulWidget> on State<T> {
     Type type = reference.runtimeType;
     switch (type) {
       case const (CollectionReferenceWrapper):
-        throw ('CollectionReferenceWrapper is not yet supported');
+        stream = (reference as CollectionReferenceWrapper).snapshots();
       case const (DocumentReferenceWrapper):
         stream = (reference as DocumentReferenceWrapper).snapshots();
       case const (ValueReferenceWrapper):
@@ -140,7 +133,7 @@ mixin FListenerChangeNotifierMixin on ChangeNotifier {
     Type type = reference.runtimeType;
     switch (type) {
       case const (CollectionReferenceWrapper):
-        throw ('CollectionReferenceWrapper is not yet supported');
+        stream = (reference as CollectionReferenceWrapper).snapshots();
       case const (DocumentReferenceWrapper):
         stream = (reference as DocumentReferenceWrapper).snapshots();
       case const (ValueReferenceWrapper):
@@ -207,6 +200,7 @@ mixin FStreamSubscriberStateMixin<T extends StatefulWidget> on State<T> {
   final List<StreamSubscription> _subscriptions = <StreamSubscription>[];
 
   /// Listens to a stream and saves it to the list of subscriptions.
+  // ignore: avoid_shadowing_type_parameters
   void listen<T>(
     Stream<T>? stream,
     void Function(T data) onData, {
