@@ -1,18 +1,18 @@
 part of 'fsm.dart';
 
 mixin FListenerMixin {
-  Map<String, ReferenceWrapper> _referenceWrappers = {};
-  Map<String, StreamSubscription> _subscriptions = {};
+  final Map<String, ReferenceWrapper> _referenceWrappers = {};
+  final Map<String, StreamSubscription> _subscriptions = {};
 
   /// Allows to group subscriptions so that the group can be closed without
   /// calling [FListenerMixin.closeF]. This is useful when you want to cancel
-  /// a specific set of stream listeners, just pass a custom box name when
+  /// a specific set of stream listeners, just pass a custom group name when
   /// listening to the stream.
-  Map<String, Set<String>> _boxes = {};
+  final Map<String, Set<String>> _groups = {};
 
   /// Listens to a stream and saves it to the list of subscriptions.
   void listenF(ReferenceWrapper reference, void Function(dynamic data) onData,
-      {Function? onError, String box = 'default'}) {
+      {Function? onError, String name = 'default'}) {
     Stream stream;
     Type type = reference.runtimeType;
     switch (type) {
@@ -28,32 +28,150 @@ mixin FListenerMixin {
 
     _referenceWrappers[reference.path] = reference;
     _subscriptions[reference.path] = stream.listen(onData, onError: onError);
-    _boxes[box] ??= {};
-    _boxes[box]!.add(reference.path);
+    (_groups[name] ?? {}).add(reference.path);
   }
 
   void addListenerF(ReferenceWrapper reference, StreamSubscription listener,
-      {String box = 'default'}) {
+      {String name = 'default'}) {
     _referenceWrappers[reference.path] = reference;
     _subscriptions[reference.path] = listener;
-    _boxes[box] ??= {};
-    _boxes[box]!.add(reference.path);
+    (_groups[name] ?? {}).add(reference.path);
   }
 
   /// Cancels all streams that were previously added with listen().
   void closeF() {
-    _referenceWrappers.entries.forEach((element) => element.value.close());
-    _subscriptions.entries.forEach((element) => element.value.cancel());
-    _boxes.clear();
+    for (var element in _referenceWrappers.entries) {
+      element.value.close();
+    }
+    for (var element in _subscriptions.entries) {
+      element.value.cancel();
+    }
+    _groups.clear();
   }
 
-  void closeBox(String box) {
-    if (_boxes[box]?.isEmpty ?? true) return;
-    for (final ref in _boxes[box]!) {
+  void closeFGroup(String name) {
+    if (_groups[name]?.isEmpty ?? true) return;
+    for (final ref in _groups[name]!) {
       _referenceWrappers.remove(ref)?.close();
       _subscriptions.remove(ref)?.cancel();
     }
-    _boxes[box]?.clear();
+    _groups[name]!.clear();
+  }
+}
+
+mixin FListenerStateMixin<T extends StatefulWidget> on State<T> {
+  final Map<String, ReferenceWrapper> _referenceWrappers = {};
+  final Map<String, StreamSubscription> _subscriptions = {};
+
+  /// Allows to group subscriptions so that the group can be closed without
+  /// calling [FListenerMixin.closeF]. This is useful when you want to cancel
+  /// a specific set of stream listeners, just pass a custom group name when
+  /// listening to the stream.
+  final Map<String, Set<String>> _groups = {};
+
+  @override
+  void dispose() {
+    closeF();
+    super.dispose();
+  }
+
+  /// Listens to a stream and saves it to the list of subscriptions.
+  void listenF(ReferenceWrapper reference, void Function(dynamic data) onData,
+      {Function? onError, String name = 'default'}) {
+    Stream stream;
+    Type type = reference.runtimeType;
+    switch (type) {
+      case const (CollectionReferenceWrapper):
+        throw ('CollectionReferenceWrapper is not yet supported');
+      case const (DocumentReferenceWrapper):
+        stream = (reference as DocumentReferenceWrapper).snapshots();
+      case const (ValueReferenceWrapper):
+        stream = (reference as ValueReferenceWrapper).values();
+      default:
+        return;
+    }
+
+    _referenceWrappers[reference.path] = reference;
+    _subscriptions[reference.path] = stream.listen(onData, onError: onError);
+    (_groups[name] ?? {}).add(reference.path);
+  }
+
+  /// Cancels all streams that were previously added with listen().
+  void closeF() {
+    for (var element in _referenceWrappers.entries) {
+      element.value.close();
+    }
+    for (var element in _subscriptions.entries) {
+      element.value.cancel();
+    }
+    _groups.clear();
+  }
+
+  void closeFGroup(String name) {
+    if (_groups[name]?.isEmpty ?? true) return;
+    for (final ref in _groups[name]!) {
+      _referenceWrappers.remove(ref)?.close();
+      _subscriptions.remove(ref)?.cancel();
+    }
+    _groups[name]!.clear();
+  }
+}
+
+mixin FListenerChangeNotifierMixin on ChangeNotifier {
+  final Map<String, ReferenceWrapper> _referenceWrappers = {};
+  final Map<String, StreamSubscription> _subscriptions = {};
+
+  /// Allows to group subscriptions so that the group can be closed without
+  /// calling [FListenerMixin.closeF]. This is useful when you want to cancel
+  /// a specific set of stream listeners, just pass a custom group name when
+  /// listening to the stream.
+  final Map<String, Set<String>> _groups = {};
+
+  @override
+  void dispose() {
+    closeF();
+    super.dispose();
+  }
+
+  /// Listens to a stream and saves it to the list of subscriptions.
+  void listenF(ReferenceWrapper reference, void Function(dynamic data) onData,
+      {Function? onError, String name = 'default'}) {
+    Stream stream;
+    Type type = reference.runtimeType;
+    switch (type) {
+      case const (CollectionReferenceWrapper):
+        throw ('CollectionReferenceWrapper is not yet supported');
+      case const (DocumentReferenceWrapper):
+        stream = (reference as DocumentReferenceWrapper).snapshots();
+      case const (ValueReferenceWrapper):
+        stream = (reference as ValueReferenceWrapper).values();
+      default:
+        return;
+    }
+
+    _referenceWrappers[reference.path] = reference;
+    _subscriptions[reference.path] = stream.listen(onData, onError: onError);
+    (_groups[name] ?? {}).add(reference.path);
+  }
+
+  /// Cancels all streams that were previously added with listen().
+  void closeF() {
+    for (var element in _referenceWrappers.entries) {
+      element.value.close();
+    }
+    for (var element in _subscriptions.entries) {
+      element.value.cancel();
+    }
+    _groups.clear();
+  }
+
+  void closeFGroup(String name) {
+    if (_groups[name]?.isEmpty ?? true) return;
+    for (final ref in _groups[name]!) {
+      _referenceWrappers.remove(ref)?.close();
+      _subscriptions.remove(ref)?.cancel();
+    }
+    _groups[name]!.clear();
   }
 }
 
@@ -61,7 +179,7 @@ mixin FListenerMixin {
 /// Mixin for classes that own `StreamSubscription`s and expose an API for
 /// disposing of themselves by cancelling the subscriptions
 mixin FStreamSubscriberMixin {
-  List<StreamSubscription> _subscriptions = <StreamSubscription>[];
+  final List<StreamSubscription> _subscriptions = <StreamSubscription>[];
 
   /// Listens to a stream and saves it to the list of subscriptions.
   void listen<T>(
@@ -82,44 +200,64 @@ mixin FStreamSubscriberMixin {
   }
 }
 
-mixin FListenerChangeNotifierMixin on ChangeNotifier {
-  Map<String, ReferenceWrapper> _referenceWrappers = {};
-  Map<String, StreamSubscription> _subscriptions = {};
+/// Imported from `firebase/ui/utils/stream_subscriber_mixin.dart`.
+/// Mixin for classes that own `StreamSubscription`s and expose an API for
+/// disposing of themselves by cancelling the subscriptions
+mixin FStreamSubscriberStateMixin<T extends StatefulWidget> on State<T> {
+  final List<StreamSubscription> _subscriptions = <StreamSubscription>[];
+
+  /// Listens to a stream and saves it to the list of subscriptions.
+  void listen<T>(
+    Stream<T>? stream,
+    void Function(T data) onData, {
+    Function? onError,
+  }) {
+    if (stream != null) {
+      _subscriptions.add(stream.listen(onData, onError: onError));
+    }
+  }
 
   @override
   void dispose() {
-    closeF();
+    cancelSubscriptions();
     super.dispose();
   }
 
-  /// Listens to a stream and saves it to the list of subscriptions.
-  void listenF(ReferenceWrapper reference, void Function(dynamic data) onData,
-      {Function? onError}) {
-    Stream stream;
-    Type type = reference.runtimeType;
-    switch (type) {
-      case const (CollectionReferenceWrapper):
-        throw ('CollectionReferenceWrapper is not yet supported');
-      case const (DocumentReferenceWrapper):
-        stream = (reference as DocumentReferenceWrapper).snapshots();
-      case const (ValueReferenceWrapper):
-        stream = (reference as ValueReferenceWrapper).values();
-      default:
-        return;
+  /// Cancels all streams that were previously added with listen().
+  void cancelSubscriptions() {
+    for (var subscription in _subscriptions) {
+      subscription.cancel();
     }
+  }
+}
 
-    _referenceWrappers[reference.path] = reference;
-    _subscriptions[reference.path] = stream.listen(onData, onError: onError);
+/// Imported from `firebase/ui/utils/stream_subscriber_mixin.dart`.
+/// Mixin for classes that own `StreamSubscription`s and expose an API for
+/// disposing of themselves by cancelling the subscriptions
+mixin FStreamSubscriberChangeNotifierMixin on ChangeNotifier {
+  final List<StreamSubscription> _subscriptions = <StreamSubscription>[];
+
+  /// Listens to a stream and saves it to the list of subscriptions.
+  void listen<T>(
+    Stream<T>? stream,
+    void Function(T data) onData, {
+    Function? onError,
+  }) {
+    if (stream != null) {
+      _subscriptions.add(stream.listen(onData, onError: onError));
+    }
   }
 
-  void addListenerF(ReferenceWrapper reference, StreamSubscription listener) {
-    _referenceWrappers[reference.path] = reference;
-    _subscriptions[reference.path] = listener;
+  @override
+  void dispose() {
+    cancelSubscriptions();
+    super.dispose();
   }
 
   /// Cancels all streams that were previously added with listen().
-  void closeF() {
-    _referenceWrappers.entries.forEach((element) => element.value.close());
-    _subscriptions.entries.forEach((element) => element.value.cancel());
+  void cancelSubscriptions() {
+    for (var subscription in _subscriptions) {
+      subscription.cancel();
+    }
   }
 }
