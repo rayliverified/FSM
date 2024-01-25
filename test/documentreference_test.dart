@@ -385,5 +385,35 @@ void main() {
       F.instance.doc(path).updateData('Test 1');
       F.instance.doc(path).setData('Test 1', notify: true);
     });
+
+    test('Equality Test - Double', () async {
+      F.instance.destroy();
+      int counter = 0;
+      F.instance.doc(path).snapshots().listen((event) {
+        switch (counter) {
+          case 0:
+            expect(event.data, 5.0);
+            expect(event.data, 5);
+          case 1:
+            expect(event.data, 5.0);
+            expect(event.data, 5);
+          case 2:
+            expect(event.data, 10.0);
+          case 3:
+            expect(event.data, 'Should not be called.');
+          default:
+            break;
+        }
+        counter += 1;
+      });
+
+      F.instance.doc(path).setData(5.0);
+      // Force update.
+      F.instance.doc(path).updateData(5.0, notify: true);
+      // Update naturally because values are different.
+      F.instance.doc(path).setData(10.0);
+      // Update integer instead of double.
+      F.instance.doc(path).setData(10);
+    });
   });
 }
