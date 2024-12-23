@@ -172,7 +172,7 @@ mixin FListenerChangeNotifierMixin on ChangeNotifier {
 /// Mixin for classes that own `StreamSubscription`s and expose an API for
 /// disposing of themselves by cancelling the subscriptions
 mixin FStreamSubscriberMixin {
-  final List<StreamSubscription> _subscriptions = <StreamSubscription>[];
+  final List<StreamSubscription> _streamSubscriptions = <StreamSubscription>[];
 
   /// Listens to a stream and saves it to the list of subscriptions.
   void listen<T>(
@@ -181,13 +181,13 @@ mixin FStreamSubscriberMixin {
     Function? onError,
   }) {
     if (stream != null) {
-      _subscriptions.add(stream.listen(onData, onError: onError));
+      _streamSubscriptions.add(stream.listen(onData, onError: onError));
     }
   }
 
   /// Cancels all streams that were previously added with listen().
   void cancelSubscriptions() {
-    for (var subscription in _subscriptions) {
+    for (var subscription in _streamSubscriptions) {
       subscription.cancel();
     }
   }
