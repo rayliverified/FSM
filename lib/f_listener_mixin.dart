@@ -186,10 +186,12 @@ mixin FStreamSubscriberMixin {
   }
 
   /// Cancels all streams that were previously added with listen().
-  void cancelSubscriptions() {
+  Future<void> cancelSubscriptions() async {
+    final List<Future> futures = [];
     for (var subscription in _streamSubscriptions) {
-      subscription.cancel();
+      futures.add(subscription.cancel());
     }
+    await Future.wait(futures);
   }
 }
 
@@ -218,10 +220,12 @@ mixin FStreamSubscriberStateMixin<T extends StatefulWidget> on State<T> {
   }
 
   /// Cancels all streams that were previously added with listen().
-  void cancelSubscriptions() {
+  Future<void> cancelSubscriptions() async {
+    final List<Future> futures = [];
     for (var subscription in _subscriptions) {
-      subscription.cancel();
+      futures.add(subscription.cancel());
     }
+    await Future.wait(futures);
   }
 }
 
